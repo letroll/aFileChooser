@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ipaulpro.afilechooser.utils;
+package com.mobileinno.multifilechooser.utils;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -37,7 +37,7 @@ import android.provider.MediaStore.Audio;
 import android.provider.MediaStore.Video;
 import android.util.Log;
 
-import com.ipaulpro.afilechooser.R;
+import com.mobileinno.multifilechooser.R;
 
 /**
  * @version 2009-07-03

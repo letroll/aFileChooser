@@ -14,7 +14,7 @@
  * limitations under the License. 
  */ 
 
-package com.ipaulpro.afilechooser;
+package com.mobileinno.multifilechooser;
 
 import java.io.File;
 import java.util.List;
@@ -23,7 +23,7 @@ import android.content.Context;
 import android.os.FileObserver;
 import android.support.v4.content.AsyncTaskLoader;
 
-import com.ipaulpro.afilechooser.utils.FileUtils;
+import com.mobileinno.multifilechooser.utils.FileUtils;
 
 /**
  * Loader that returns a list of Files in a given file path.

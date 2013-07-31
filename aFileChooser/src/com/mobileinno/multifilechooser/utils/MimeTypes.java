@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ipaulpro.afilechooser.utils;
+package com.mobileinno.multifilechooser.utils;
 
 import java.util.HashMap;
 import java.util.Map;
