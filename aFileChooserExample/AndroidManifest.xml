@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ipaulpro.afilechooserexample"
+    package="com.mobileinno.multifilechooserexample"
     android:versionCode="2"
     android:versionName="1.1" >
 
@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.ipaulpro.afilechooser.FileChooserActivity"
+            android:name="com.mobileinno.multifilechooser.FileChooserActivity"
             android:exported="false"
             android:icon="@drawable/ic_chooser"
             android:label="@string/choose_file"
