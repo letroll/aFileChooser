@@ -16,15 +16,6 @@
 
 package com.ipaulpro.afilechooser.utils;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.net.URISyntaxException;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -38,6 +29,15 @@ import android.provider.MediaStore.Video;
 import android.util.Log;
 
 import com.ipaulpro.afilechooser.R;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.net.URISyntaxException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @version 2009-07-03
@@ -55,6 +55,7 @@ public class FileUtils {
 	public static final String MIME_TYPE_IMAGE = "image/*"; 
 	public static final String MIME_TYPE_VIDEO = "video/*"; 
 	public static final String MIME_TYPE_APP = "application/*";
+    public static final String MIME_TYPE_ZIP = "application/zip";
 
 	/**
 	 * Whether the filename is a video file.
@@ -484,4 +485,21 @@ public class FileUtils {
 		intent.addCategory(Intent.CATEGORY_OPENABLE);
 		return intent;
 	}
+
+    /**
+     * Get the Intent for selecting content to be used in an Intent Chooser.
+     *
+     * @return The intent for opening a file with Intent.createChooser()
+     *
+     * @author paulburke
+     */
+    public static Intent createGetContentIntent(String minType) {
+        // Implicitly allow the user to select a particular kind of data
+        final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        // The MIME data type filter
+        intent.setType(minType);
+        // Only return URIs that can be opened with ContentResolver
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        return intent;
+    }
 }

@@ -16,8 +16,6 @@
 
 package com.ipaulpro.afilechooserexample;
 
-import java.io.File;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -30,6 +28,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
+
+import java.io.File;
 
 /**
  * @author paulburke (ipaulpro)
@@ -58,7 +58,7 @@ public class FileChooserExampleActivity extends Activity {
 	
 	private void showChooser() {
 		// Use the GET_CONTENT intent from the utility class
-		Intent target = FileUtils.createGetContentIntent();
+		Intent target = FileUtils.createGetContentIntent(FileUtils.MIME_TYPE_ZIP);
 		// Create the chooser Intent
 		Intent intent = Intent.createChooser(
 				target, getString(R.string.chooser_title));
