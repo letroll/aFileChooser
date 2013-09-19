@@ -20,7 +20,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.FragmentManager;
@@ -36,6 +35,8 @@ import com.actionbarsherlock.view.MenuItem;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Main Activity that handles the FileListFragments
@@ -49,9 +50,14 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 		OnBackStackChangedListener {
 
 	public static final String PATH = "path";
+    public static final String URIS = "uris";
+    public static final String ECHO = "echo";
 	public static final String EXTERNAL_BASE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
 
 	private FragmentManager mFragmentManager;
+    private FileListFragment currentFileListFragment;
+
+    private long echo;
 	private final BroadcastReceiver mStorageListener = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -66,6 +72,7 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        echo = this.getIntent().getLongExtra(ECHO, -1);
 		setContentView(R.layout.chooser);
 
 		ActionBar actionBar = getSupportActionBar();
@@ -75,13 +82,12 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 		mFragmentManager = getSupportFragmentManager();
 		mFragmentManager.addOnBackStackChangedListener(this);
 
-            if (savedInstanceState == null) {
-                mPath = EXTERNAL_BASE_PATH;
-                addFragment();
-            } else {
-                mPath = savedInstanceState.getString(PATH);
-            }
-
+        if (savedInstanceState == null) {
+            mPath = EXTERNAL_BASE_PATH;
+            addFragment();
+        } else {
+            mPath = savedInstanceState.getString(PATH);
+        }
 
 		setTitle(mPath);
 	}
@@ -89,27 +95,23 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 	@Override
 	protected void onPause() {
 		super.onPause();
-
 		unregisterStorageListener();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-
 		registerStorageListener();
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-
 		outState.putString(PATH, mPath);
 	}
 
 	@Override
 	public void onBackStackChanged() {
-
 		int count = mFragmentManager.getBackStackEntryCount();
 		if (count > 0) {
 			BackStackEntry fragment = mFragmentManager
@@ -128,7 +130,6 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 		menu.add(0, R.id.menu_ok, 0, "select current directory")
 				.setIcon(R.drawable.abs__ic_cab_done_holo_light)
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-
 		return true;
 	}
 
@@ -142,11 +143,13 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 			}
 			mFragmentManager.popBackStack();
 			return true;
-		} else if (itemId == R.id.menu_ok
-				&& FileUtils.selectMode != FileUtils.MODE_SELECT_FILE) {
-            finishWithResult(new File(mPath));
+		} else if (itemId == R.id.menu_ok) {
+            onDecisionMade(((FileListAdapter)currentFileListFragment.getListAdapter()).getSelectedFiles());
             return true;
 		}
+
+//        if (itemId == R.id.menu_ok && FileUtils.selectMode == FileUtils.MODE_SELECT_FILE){
+//        }
 
 		return super.onOptionsItemSelected(item);
 	}
@@ -156,6 +159,7 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 	 */
 	private void addFragment() {
 		FileListFragment fragment = FileListFragment.newInstance(mPath);
+        currentFileListFragment=fragment;
 		mFragmentManager.beginTransaction()
 				.add(R.id.explorer_fragment, fragment).commit();
 	}
@@ -169,62 +173,60 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 	 */
 	private void replaceFragment(File file) {
 		mPath = file.getAbsolutePath();
-
 		FileListFragment fragment = FileListFragment.newInstance(mPath);
+        currentFileListFragment=fragment;
 		mFragmentManager.beginTransaction()
 				.replace(R.id.explorer_fragment, fragment)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.addToBackStack(mPath).commit();
 	}
 
-	/**
-	 * Finish this Activity with a result code and URI of the selected file.
-	 * 
-	 * @param file
-	 *            The file selected.
-	 */
-	private void finishWithResult(File file) {
-		if (file != null) {
-			Uri uri = Uri.fromFile(file);
-			setResult(RESULT_OK, new Intent().setData(uri));
-			finish();
-		} else {
-			setResult(RESULT_CANCELED);
-			finish();
-		}
-	}
+    /**
+     * Finish this Activity with a result code and URI of the selected file.
+     *
 
-	/**
-	 * Called when the user selects a File
-	 * 
-	 * @param file
-	 *            The file that was selected
-	 */
-	protected void onFileSelected(File file) {
-		if (file != null) {
-			if (file.isDirectory()) {
-				replaceFragment(file);
-			} else if (FileUtils.selectMode != FileUtils.MODE_SELECT_DIR) {
-				finishWithResult(file);
-			}
-		} else {
-			Toast.makeText(FileChooserActivity.this,
-					R.string.error_selecting_file, Toast.LENGTH_SHORT).show();
-		}
-	}
+     * @param files The file selected.
+     */
+    private void finishWithResult(ArrayList<String> files) {
+        if (files != null) {
+            Intent result = new Intent();
+            result.putExtra(URIS, files);
+            result.putExtra(ECHO, echo);
+            this.setResult(RESULT_OK, result);
+            finish();
+        } else {
+            setResult(RESULT_CANCELED);
+            finish();
+        }
+    }
 
-	// protected void onDirSelected(File file) {
-	// replaceFragment(file);
-	// }
-	//
-	// protected void onFileOrDirSelected(File file) {
-	// if (file != null) {
-	// finishWithResult(file);
-	// } else {
-	// Toast.makeText(FileChooserActivity.this,
-	// R.string.error_selecting_file, Toast.LENGTH_SHORT).show();
-	// }
-	// }
+      /**
+   * Called when the user selects a File
+   *
+   * @param file
+   *            The file that was selected
+   */
+  protected void onFolderSelected(File file) {
+      if (file != null) {
+          if (file.isDirectory()) {
+              replaceFragment(file);
+          } else if (FileUtils.selectMode != FileUtils.MODE_SELECT_DIR) {
+              finishWithResult(new ArrayList<String>(Arrays.asList(file.getPath().toString())));
+          }
+      } else {
+          Toast.makeText(FileChooserActivity.this,
+                  R.string.error_selecting_file, Toast.LENGTH_SHORT).show();
+      }
+  }
+
+    /**
+     * Called when the user selects a File
+     *
+     * @param files The file that was selected
+     */
+    protected void onDecisionMade(ArrayList<String> files) {
+        finishWithResult(files);
+    }
 
 	/**
 	 * Register the external storage BroadcastReceiver.

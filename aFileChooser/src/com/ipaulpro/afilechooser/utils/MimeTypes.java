@@ -16,11 +16,11 @@
 
 package com.ipaulpro.afilechooser.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MimeTypes {
 

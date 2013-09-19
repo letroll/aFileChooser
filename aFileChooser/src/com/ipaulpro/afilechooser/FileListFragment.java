@@ -16,25 +16,15 @@
 
 package com.ipaulpro.afilechooser;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.os.FileObserver;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
-
-import com.ipaulpro.afilechooser.utils.FileUtils;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -72,39 +62,37 @@ public class FileListFragment extends ListFragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mAdapter = new FileListAdapter(getActivity());
+        mAdapter = new FileListAdapter(getActivity()) {
+            @Override
+            public void onFileSelected(File file) {
+                if (file.isDirectory()) {
+                    this.clearSelectedFiles();
+                    ((FileChooserActivity) getActivity()).onFolderSelected(file);
+                } else {
+                }
+            }
+
+            @Override
+            public void onFileDeselected(File file) {
+            }
+        };
+
 		mPath = getArguments() != null ? getArguments().getString(
 				FileChooserActivity.PATH) : FileChooserActivity.EXTERNAL_BASE_PATH;
 	}
 
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		setEmptyText(getString(R.string.empty_directory));
-		setListAdapter(mAdapter);
-		setListShown(false);
-
-		getLoaderManager().initLoader(LOADER_ID, null, this);
-
-//		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> adapterView, View view,
-//					int position, long arg3) {
-//					File file = (File) mAdapter.getItem(position);
-//					((FileChooserActivity) getActivity()).onFileOrDirSelected(file);
-//				return true;
-//			}
-//		});
-
-	}
-
-	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
-        File file = (File) mAdapter.getItem(position);
-        mPath = file.getAbsolutePath();
-        ((FileChooserActivity) getActivity()).onFileSelected(file);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.list, container, false);
     }
+
+
+    @Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		setListAdapter(mAdapter);
+		getLoaderManager().initLoader(LOADER_ID, null, this);
+        super.onActivityCreated(savedInstanceState);
+	}
 
 	@Override
 	public Loader<List<File>> onCreateLoader(int id, Bundle args) {
@@ -114,11 +102,6 @@ public class FileListFragment extends ListFragment implements
 	@Override
 	public void onLoadFinished(Loader<List<File>> loader, List<File> data) {
 		mAdapter.setListItems(data);
-
-		if (isResumed())
-			setListShown(true);
-		else
-			setListShownNoAnimation(true);
 	}
 
 	@Override
@@ -126,173 +109,4 @@ public class FileListFragment extends ListFragment implements
 		mAdapter.clear();
 	}
 
-	private static class FileLoader extends AsyncTaskLoader<List<File>> {
-
-		private static final int FILE_OBSERVER_MASK = FileObserver.CREATE
-				| FileObserver.DELETE | FileObserver.DELETE_SELF
-				| FileObserver.MOVED_FROM | FileObserver.MOVED_TO
-				| FileObserver.MODIFY | FileObserver.MOVE_SELF;
-
-		private FileObserver mFileObserver;
-
-		private List<File> mData;
-		private String mPath;
-
-		public FileLoader(Context context, String path) {
-			super(context);
-			this.mPath = path;
-		}
-
-		@Override
-		public List<File> loadInBackground() {
-			return FileUtils.getFileList(mPath);
-		}
-
-		@Override
-		public void deliverResult(List<File> data) {
-			if (isReset()) {
-				onReleaseResources(data);
-				return;
-			}
-
-			List<File> oldData = mData;
-			mData = data;
-
-			if (isStarted())
-				super.deliverResult(data);
-
-			if (oldData != null && oldData != data)
-				onReleaseResources(oldData);
-		}
-
-		@Override
-		protected void onStartLoading() {
-			if (mData != null)
-				deliverResult(mData);
-
-			if (mFileObserver == null) {
-				mFileObserver = new FileObserver(mPath, FILE_OBSERVER_MASK) {
-					@Override
-					public void onEvent(int event, String path) {
-						onContentChanged();
-					}
-				};
-			}
-			mFileObserver.startWatching();
-
-			if (takeContentChanged() || mData == null)
-				forceLoad();
-		}
-
-		@Override
-		protected void onStopLoading() {
-			cancelLoad();
-		}
-
-		@Override
-		protected void onReset() {
-			onStopLoading();
-
-			if (mData != null) {
-				onReleaseResources(mData);
-				mData = null;
-			}
-		}
-
-		@Override
-		public void onCanceled(List<File> data) {
-			super.onCanceled(data);
-
-			onReleaseResources(data);
-		}
-
-		protected void onReleaseResources(List<File> data) {
-
-			if (mFileObserver != null) {
-				mFileObserver.stopWatching();
-				mFileObserver = null;
-			}
-		}
-	}
-
-	private class FileListAdapter extends BaseAdapter {
-
-		private List<File> mFiles = new ArrayList<File>();
-		private final LayoutInflater mInflater;
-
-		public FileListAdapter(Context context) {
-			mInflater = LayoutInflater.from(context);
-		}
-
-		public ArrayList<File> getListItems() {
-			return (ArrayList<File>) mFiles;
-		}
-
-		public void setListItems(List<File> files) {
-			this.mFiles = files;
-			notifyDataSetChanged();
-		}
-
-		@Override
-	    public int getCount() {
-			return mFiles.size();
-		}
-
-		public void add(File file) {
-			mFiles.add(file);
-			notifyDataSetChanged();
-		}
-
-		public void clear() {
-			mFiles.clear();
-			notifyDataSetChanged();
-		}
-
-		@Override
-	    public Object getItem(int position) {
-			return mFiles.get(position);
-		}
-
-		@Override
-	    public long getItemId(int position) {
-			return position;
-		}
-
-		@Override
-	    public View getView(int position, View convertView, ViewGroup parent) {
-			View row = convertView;
-			ViewHolder holder = null;
-
-			if (row == null) {
-				row = mInflater.inflate(R.layout.file, parent, false);
-				holder = new ViewHolder(row);
-				row.setTag(holder);
-			} else {
-				// Reduce, reuse, recycle!
-				holder = (ViewHolder) row.getTag();
-			}
-
-			// Get the file at the current position
-			final File file = (File) getItem(position);
-
-			// Set the TextView as the file name
-			holder.nameView.setText(file.getName());
-
-			// If the item is not a directory, use the file icon
-			holder.iconView.setImageResource(file.isDirectory() ? R.drawable.ic_folder
-					: R.drawable.ic_file);
-
-			return row;
-		}
-
-		 class ViewHolder {
-			TextView nameView;
-			ImageView iconView;
-
-			ViewHolder(View row) {
-				nameView = (TextView) row.findViewById(R.id.file_name);
-				iconView = (ImageView) row.findViewById(R.id.file_icon);
-			}
-		}
-	}
 }
