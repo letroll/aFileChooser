@@ -74,7 +74,7 @@ public class FileListFragment extends ListFragment implements
 
 		mAdapter = new FileListAdapter(getActivity());
 		mPath = getArguments() != null ? getArguments().getString(
-				FileChooserActivity.PATH) : FileChooserActivity.ROOT_PATH;
+				FileChooserActivity.PATH) : FileChooserActivity.EXTERNAL_BASE_PATH;
 	}
 
 	@Override

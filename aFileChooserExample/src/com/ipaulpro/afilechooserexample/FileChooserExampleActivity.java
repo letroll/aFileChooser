@@ -24,7 +24,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.ipaulpro.afilechooser.utils.FileUtils;
 
@@ -74,9 +76,9 @@ public class FileChooserExampleActivity extends Activity {
 	}
 	
 	private void showChooser() {
-
 		// Use the GET_CONTENT intent from the utility class
-		Intent target = FileUtils.createGetContentIntent(FileUtils.MIME_TYPE_ZIP);
+		Intent target = FileUtils.createGetContentIntent();
+
 		// Create the chooser Intent
 		Intent intent = Intent.createChooser(
 				target, getString(R.string.choose_file));

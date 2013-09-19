@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentManager.BackStackEntry;
 import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
@@ -48,12 +49,10 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 		OnBackStackChangedListener {
 
 	public static final String PATH = "path";
-	// public static final String EXTERNAL_BASE_PATH = Environment
-	// .getExternalStorageDirectory().getAbsolutePath();
-	public static final String ROOT_PATH = "/";
+	public static final String EXTERNAL_BASE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
 
 	private FragmentManager mFragmentManager;
-	private BroadcastReceiver mStorageListener = new BroadcastReceiver() {
+	private final BroadcastReceiver mStorageListener = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Toast.makeText(context, R.string.storage_removed, Toast.LENGTH_LONG)
@@ -76,12 +75,13 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 		mFragmentManager = getSupportFragmentManager();
 		mFragmentManager.addOnBackStackChangedListener(this);
 
-		if (savedInstanceState == null) {
-			mPath = ROOT_PATH;
-			addFragment();
-		} else {
-			mPath = savedInstanceState.getString(PATH);
-		}
+            if (savedInstanceState == null) {
+                mPath = EXTERNAL_BASE_PATH;
+                addFragment();
+            } else {
+                mPath = savedInstanceState.getString(PATH);
+            }
+
 
 		setTitle(mPath);
 	}
@@ -116,7 +116,7 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 					.getBackStackEntryAt(count - 1);
 			mPath = fragment.getName();
 		} else {
-			mPath = ROOT_PATH;
+			mPath = EXTERNAL_BASE_PATH;
 		}
 
 		setTitle(mPath);

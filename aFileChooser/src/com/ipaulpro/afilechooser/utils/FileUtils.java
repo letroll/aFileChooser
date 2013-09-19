@@ -496,13 +496,7 @@ public class FileUtils {
 	 * @author paulburke
 	 */
 	public static Intent createGetContentIntent() {
-		// Implicitly allow the user to select a particular kind of data
-		final Intent intent = new Intent(Intent.ACTION_GET_CONTENT); 
-		// The MIME data type filter
-		intent.setType("*/*"); 
-		// Only return URIs that can be opened with ContentResolver
-		intent.addCategory(Intent.CATEGORY_OPENABLE);
-		return intent;
+		return createGetContentIntent(null);
 	}
 
     /**
@@ -516,7 +510,10 @@ public class FileUtils {
         // Implicitly allow the user to select a particular kind of data
         final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         // The MIME data type filter
+        if(minType!=null)
         intent.setType(minType);
+        else
+            intent.setType("*/*");
         // Only return URIs that can be opened with ContentResolver
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         return intent;
