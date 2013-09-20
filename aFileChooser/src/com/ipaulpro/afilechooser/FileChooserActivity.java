@@ -51,13 +51,14 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 
 	public static final String PATH = "path";
     public static final String URIS = "uris";
-    public static final String ECHO = "echo";
+    public static final String TAG = "aFileChooser";
 	public static final String EXTERNAL_BASE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
+    public static final String EXTRA_FILTER_INCLUDE_EXTENSIONS =
+            "com.ipaulpro.afilechooser.EXTRA_FILTER_INCLUDE_EXTENSIONS";
+    private ArrayList<String> mFilterIncludeExtensions = new ArrayList<String>();
 
 	private FragmentManager mFragmentManager;
-    private FileListFragment currentFileListFragment;
 
-    private long echo;
 	private final BroadcastReceiver mStorageListener = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -72,12 +73,16 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        echo = this.getIntent().getLongExtra(ECHO, -1);
 		setContentView(R.layout.chooser);
 
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setHomeButtonEnabled(true);
+
+        Intent intent = getIntent();
+        if(intent != null){
+            mFilterIncludeExtensions = intent.getStringArrayListExtra(EXTRA_FILTER_INCLUDE_EXTENSIONS);
+        }
 
 		mFragmentManager = getSupportFragmentManager();
 		mFragmentManager.addOnBackStackChangedListener(this);
@@ -120,7 +125,6 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 		} else {
 			mPath = EXTERNAL_BASE_PATH;
 		}
-
 		setTitle(mPath);
 		supportInvalidateOptionsMenu();
 	}
@@ -136,6 +140,7 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int itemId = item.getItemId();
+
 		if (itemId == android.R.id.home) {
 			if (mFragmentManager.getBackStackEntryCount() == 0) {
 				setResult(RESULT_CANCELED);
@@ -144,24 +149,27 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 			mFragmentManager.popBackStack();
 			return true;
 		} else if (itemId == R.id.menu_ok) {
-            onDecisionMade(((FileListAdapter)currentFileListFragment.getListAdapter()).getSelectedFiles());
+            switch (FileUtils.selectMode){
+                case FileUtils.MODE_SELECT_DIR:
+                    onDecisionMade(new ArrayList<String>(Arrays.asList(mPath)));
+                    break;
+                case FileUtils.MODE_SELECT_FILE:
+                    onDecisionMade(((FileListFragment)mFragmentManager.findFragmentByTag(mPath)).getSelectedFiles());
+                    break;
+            }
             return true;
 		}
-
-//        if (itemId == R.id.menu_ok && FileUtils.selectMode == FileUtils.MODE_SELECT_FILE){
-//        }
 
 		return super.onOptionsItemSelected(item);
 	}
 
-	/**
+    /**
 	 * Add the initial Fragment with given path.
 	 */
 	private void addFragment() {
-		FileListFragment fragment = FileListFragment.newInstance(mPath);
-        currentFileListFragment=fragment;
+		FileListFragment fragment = FileListFragment.newInstance(mPath, mFilterIncludeExtensions);
 		mFragmentManager.beginTransaction()
-				.add(R.id.explorer_fragment, fragment).commit();
+				.add(R.id.explorer_fragment, fragment,mPath).commit();
 	}
 
 	/**
@@ -173,10 +181,9 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
 	 */
 	private void replaceFragment(File file) {
 		mPath = file.getAbsolutePath();
-		FileListFragment fragment = FileListFragment.newInstance(mPath);
-        currentFileListFragment=fragment;
+		FileListFragment fragment = FileListFragment.newInstance(mPath, mFilterIncludeExtensions);
 		mFragmentManager.beginTransaction()
-				.replace(R.id.explorer_fragment, fragment)
+				.replace(R.id.explorer_fragment, fragment,mPath)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.addToBackStack(mPath).commit();
 	}
@@ -191,7 +198,6 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
         if (files != null) {
             Intent result = new Intent();
             result.putExtra(URIS, files);
-            result.putExtra(ECHO, echo);
             this.setResult(RESULT_OK, result);
             finish();
         } else {
@@ -210,19 +216,20 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
       if (file != null) {
           if (file.isDirectory()) {
               replaceFragment(file);
-          } else if (FileUtils.selectMode != FileUtils.MODE_SELECT_DIR) {
-              finishWithResult(new ArrayList<String>(Arrays.asList(file.getPath().toString())));
           }
-      } else {
-          Toast.makeText(FileChooserActivity.this,
-                  R.string.error_selecting_file, Toast.LENGTH_SHORT).show();
+//          else if (FileUtils.selectMode != FileUtils.MODE_SELECT_DIR) {
+//              finishWithResult(new ArrayList<String>(Arrays.asList(file.getPath())));
+//          }
+//      } else {
+//          Toast.makeText(FileChooserActivity.this,
+//                  R.string.error_selecting_file, Toast.LENGTH_SHORT).show();
       }
   }
 
     /**
      * Called when the user selects a File
      *
-     * @param files The file that was selected
+     * @param files The files that where selected
      */
     protected void onDecisionMade(ArrayList<String> files) {
         finishWithResult(files);

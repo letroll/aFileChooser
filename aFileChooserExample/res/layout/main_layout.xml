@@ -8,16 +8,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
     <RadioButton
-            android:id="@+id/select_all"
-            android:text="@string/select_all"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"/>
-    <RadioButton
             android:id="@+id/select_file"
             android:text="@string/select_file"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:checked="true"/>
     <RadioButton
             android:id="@+id/select_dir"
             android:text="@string/select_directory"

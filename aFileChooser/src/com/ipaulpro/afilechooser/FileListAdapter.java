@@ -50,10 +50,6 @@ public abstract class FileListAdapter extends BaseAdapter {
 	selectedFiles = new ArrayList<String>();
     }
 
-    public ArrayList<File> getListItems() {
-	return (ArrayList<File>) mFiles;
-    }
-
     public void setListItems(List<File> files) {
 	this.mFiles = files;
 	notifyDataSetChanged();
@@ -92,8 +88,10 @@ public abstract class FileListAdapter extends BaseAdapter {
 	if (row == null) {
 	    row = mInflater.inflate(R.layout.file, parent, false);
 	    holder = new ViewHolder(row);
-	    row.setTag(holder);
-	} else {
+        if (row != null) {
+            row.setTag(holder);
+        }
+    } else {
 	    // Reduce, reuse, recycle!
 	    holder = (ViewHolder) row.getTag();
 	}
@@ -105,7 +103,7 @@ public abstract class FileListAdapter extends BaseAdapter {
 	    holder.cbSelected.setVisibility(View.GONE);
 	} else {
 	    holder.cbSelected.setVisibility(View.VISIBLE);
-	    holder.cbSelected.setChecked(selectedFiles.contains(file));
+	    holder.cbSelected.setChecked(selectedFiles.contains(path));
 	}
 
 	// Set the TextView as the file name
@@ -138,7 +136,6 @@ public abstract class FileListAdapter extends BaseAdapter {
     }
 
     static class ViewHolder {
-
 	TextView nameView;
 	ImageView iconView;
 	CheckBox cbSelected;
@@ -158,7 +155,7 @@ public abstract class FileListAdapter extends BaseAdapter {
 	return selectedFiles;
     }
 
+    // Methods from superType
     public abstract void onFileSelected(File file);
-
     public abstract void onFileDeselected(File file);
 }

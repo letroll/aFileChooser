@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.ipaulpro.afilechooser.FileChooserActivity;
 import com.ipaulpro.afilechooser.utils.FileUtils;
@@ -41,7 +42,6 @@ public class FileChooserExampleActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 
 		setContentView(R.layout.main_layout);
 
@@ -58,8 +58,8 @@ public class FileChooserExampleActivity extends Activity {
         RadioGroup group= (RadioGroup) findViewById(R.id.set_group);
         group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                switch (i){
+            public void onCheckedChanged(RadioGroup radioGroup, int pos) {
+                switch (pos){
                     case R.id.select_file:
                         FileUtils.setSelectMode(FileUtils.MODE_SELECT_FILE);
                         break;
@@ -67,17 +67,26 @@ public class FileChooserExampleActivity extends Activity {
                         FileUtils.setSelectMode(FileUtils.MODE_SELECT_DIR);
                         break;
                     default:
-                        FileUtils.setSelectMode(FileUtils.MODE_SELECT_DEFAULT);
+                        FileUtils.setSelectMode(FileUtils.MODE_SELECT_FILE);
                         break;
                 }
             }
         });
 	}
-	
+
+      private static final ArrayList<String> INCLUDE_EXTENSIONS_LIST = new ArrayList<String>();
+      static{
+            INCLUDE_EXTENSIONS_LIST.add(".apk");
+            INCLUDE_EXTENSIONS_LIST.add(".bin");
+          }
+
 	private void showChooser() {
         // Create the chooser Intent
         Intent intent = new Intent(this, FileChooserActivity.class);
-        intent.putExtra(FileChooserActivity.ECHO, (long) 8883);
+        // add filter on file extenstion
+//        intent.putStringArrayListExtra(FileChooserActivity.EXTRA_FILTER_INCLUDE_EXTENSIONS, INCLUDE_EXTENSIONS_LIST);
+
+//        intent.putExtra(FileChooserActivity.PATH,"/");
         try {
             startActivityForResult(intent, REQUEST_CODE);
         } catch (ActivityNotFoundException e) {
@@ -94,10 +103,13 @@ public class FileChooserExampleActivity extends Activity {
                     if (data == null) {
                         break;
                     }
-                    long echo = data.getLongExtra(FileChooserActivity.ECHO, -1);
                     ArrayList<String> paths=data.getStringArrayListExtra(FileChooserActivity.URIS);
-                    if(paths!=null)for (String str : paths) {
-                        Log.d("echo", "" + str+"\n");
+                    if(paths!=null){
+                        StringBuilder sb = new StringBuilder();
+                        for (String str : paths)
+                         sb.append(str+"\n");
+                        Toast.makeText(this,sb.toString(),Toast.LENGTH_LONG).show();
+                        Log.d(FileChooserActivity.TAG, sb.toString());
                     }
 
                 }

@@ -28,6 +28,7 @@ import android.provider.MediaStore.Audio;
 import android.provider.MediaStore.Video;
 import android.util.Log;
 
+import com.ipaulpro.afilechooser.BuildConfig;
 import com.ipaulpro.afilechooser.R;
 
 import java.io.File;
@@ -50,7 +51,6 @@ import java.util.Locale;
 public class FileUtils {
 	/** TAG for log messages. */
 	static final String TAG = "FileUtils";
-	private static final boolean DEBUG = false; // Set to true to enable logging
 
 	public static final String MIME_TYPE_AUDIO = "audio/*"; 
 	public static final String MIME_TYPE_TEXT = "text/*"; 
@@ -59,8 +59,7 @@ public class FileUtils {
 	public static final String MIME_TYPE_APP = "application/*";
     public static final String MIME_TYPE_ZIP = "application/zip";
 
-	public static int selectMode;
-	public static final int MODE_SELECT_DEFAULT=0;
+	public static int selectMode=1;
 	public static final int MODE_SELECT_FILE=1;
 	public static final int MODE_SELECT_DIR=2;
 	
@@ -73,7 +72,7 @@ public class FileUtils {
 			selectMode=MODE_SELECT_DIR;
 			break;
 		default:
-			selectMode=MODE_SELECT_DEFAULT;
+			selectMode=MODE_SELECT_FILE;
 			break;
 		}
 	}
@@ -230,7 +229,7 @@ public class FileUtils {
 	 */
 	public static String getPath(Context context, Uri uri) throws URISyntaxException {
 
-		if(DEBUG) Log.d(TAG+" File -", 
+		if(BuildConfig.DEBUG) Log.d(TAG+" File -",
 				"Authority: " + uri.getAuthority() + 
 				", Fragment: " + uri.getFragment() + 
 				", Port: " + uri.getPort() +
@@ -309,7 +308,7 @@ public class FileUtils {
 		try {
 			mimeTypes = mtp.fromXmlResource(in);
 		} catch (Exception e) {
-			if(DEBUG) Log.e(TAG, "getMimeTypes", e);
+			if(BuildConfig.DEBUG) Log.e(TAG, "getMimeTypes", e);
 		}
 		return mimeTypes;
 	} 
@@ -371,7 +370,7 @@ public class FileUtils {
 	 * @author paulburke
 	 */
 	public static Bitmap getThumbnail(Context context, Uri uri, String mimeType) {
-		if(DEBUG) Log.d(TAG, "Attempting to get thumbnail");
+		if(BuildConfig.DEBUG) Log.d(TAG, "Attempting to get thumbnail");
 		
 		if (isMediaUri(uri)) {
 			Log.e(TAG, "You can only retrieve thumbnails for images and videos.");
@@ -386,7 +385,7 @@ public class FileUtils {
 				cursor = resolver.query(uri, null, null,null, null); 
 				if (cursor.moveToFirst()) {
 					final int id = cursor.getInt(0);
-					if(DEBUG) Log.d(TAG, "Got thumb ID: "+id);					
+					if(BuildConfig.DEBUG) Log.d(TAG, "Got thumb ID: "+id);
 
 					if (mimeType.contains("video")) {
 						bm = MediaStore.Video.Thumbnails.getThumbnail(
@@ -404,14 +403,39 @@ public class FileUtils {
 					}
 				}	
 			} catch (Exception e) {
-				if(DEBUG) Log.e(TAG, "getThumbnail", e);
+				if(BuildConfig.DEBUG) Log.e(TAG, "getThumbnail", e);
 			} finally {
 				if (cursor != null) cursor.close();
 			}
 		}
 		return bm;
 	}
-	
+
+    /**
+     * File Filter that includes only files with the specified extensions to pass
+     * @author Kiran Rao
+     *
+     */
+    private static class FileExtensionFilter implements FileFilter{
+        private ArrayList<String> mFilterIncludeExtensions;
+
+        public FileExtensionFilter(ArrayList<String> filterIncludeExtensions){
+            this.mFilterIncludeExtensions = filterIncludeExtensions;
+        }
+
+        @Override
+        public boolean accept(File file) {
+            final String fileName = file.getName();
+            boolean passesExtensionsFilter =  mFilterIncludeExtensions.isEmpty()
+                    ? true: mFilterIncludeExtensions.contains(getExtension(Uri
+                    .fromFile(file).toString()));
+            // Return files only (not directories) and skip hidden files
+            return file.isFile() && !fileName.startsWith(HIDDEN_PREFIX) &&
+                    passesExtensionsFilter;
+        }
+
+    }
+
 	private static final String HIDDEN_PREFIX = ".";
 
 	/**
@@ -461,7 +485,7 @@ public class FileUtils {
 
 	 * @author paulburke
 	 */
-	public static List<File> getFileList(String path) {
+	public static List<File> getFileList(String path, ArrayList<String> filterIncludeExtensions) {
 		ArrayList<File> list = new ArrayList<File>();
 
 		// Current directory File instance
@@ -477,7 +501,7 @@ public class FileUtils {
 		}
 
 		// List file in this directory with the file filter
-		final File[] files = pathDir.listFiles(mFileFilter);
+		final File[] files = pathDir.listFiles(new FileExtensionFilter(filterIncludeExtensions));
 		if (files != null) {
 			// Sort the files alphabetically
 			Arrays.sort(files, mComparator);
