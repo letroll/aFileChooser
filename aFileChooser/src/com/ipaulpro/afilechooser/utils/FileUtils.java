@@ -500,8 +500,12 @@ public class FileUtils {
 			for (File dir : dirs) list.add(dir);
 		}
 
-		// List file in this directory with the file filter
-		final File[] files = pathDir.listFiles(new FileExtensionFilter(filterIncludeExtensions));
+        File[] files=null;
+        // List file in this directory with the file filter
+        if(filterIncludeExtensions!=null)
+        files = pathDir.listFiles(new FileExtensionFilter(filterIncludeExtensions));
+        else
+            files = pathDir.listFiles();
 		if (files != null) {
 			// Sort the files alphabetically
 			Arrays.sort(files, mComparator);
@@ -514,9 +518,9 @@ public class FileUtils {
 
 	/**
 	 * Get the Intent for selecting content to be used in an Intent Chooser.
-	 * 
+	 *
 	 * @return The intent for opening a file with Intent.createChooser()
-	 * 
+	 *
 	 * @author paulburke
 	 */
 	public static Intent createGetContentIntent() {

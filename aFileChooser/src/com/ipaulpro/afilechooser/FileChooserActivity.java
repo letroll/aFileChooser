@@ -213,17 +213,10 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
    *            The file that was selected
    */
   protected void onFolderSelected(File file) {
-      if (file != null) {
+      if (file != null)
           if (file.isDirectory()) {
               replaceFragment(file);
           }
-//          else if (FileUtils.selectMode != FileUtils.MODE_SELECT_DIR) {
-//              finishWithResult(new ArrayList<String>(Arrays.asList(file.getPath())));
-//          }
-//      } else {
-//          Toast.makeText(FileChooserActivity.this,
-//                  R.string.error_selecting_file, Toast.LENGTH_SHORT).show();
-      }
   }
 
     /**
@@ -232,6 +225,9 @@ public class FileChooserActivity extends SherlockFragmentActivity implements
      * @param files The files that where selected
      */
     protected void onDecisionMade(ArrayList<String> files) {
+        if(files.isEmpty())Toast.makeText(FileChooserActivity.this,
+                  R.string.choose_file, Toast.LENGTH_SHORT).show();
+        else
         finishWithResult(files);
     }
 
