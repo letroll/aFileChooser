@@ -74,11 +74,11 @@ public class FileChooserExampleActivity extends Activity {
         });
 	}
 
-      private static final ArrayList<String> INCLUDE_EXTENSIONS_LIST = new ArrayList<String>();
-      static{
-            INCLUDE_EXTENSIONS_LIST.add(".apk");
-            INCLUDE_EXTENSIONS_LIST.add(".bin");
-          }
+//      private static final ArrayList<String> INCLUDE_EXTENSIONS_LIST = new ArrayList<String>();
+//      static{
+//            INCLUDE_EXTENSIONS_LIST.add(".apk");
+//            INCLUDE_EXTENSIONS_LIST.add(".bin");
+//          }
 
 	private void showChooser() {
         // Create the chooser Intent
@@ -86,7 +86,6 @@ public class FileChooserExampleActivity extends Activity {
         // add filter on file extenstion
 //        intent.putStringArrayListExtra(FileChooserActivity.EXTRA_FILTER_INCLUDE_EXTENSIONS, INCLUDE_EXTENSIONS_LIST);
 
-//        intent.putExtra(FileChooserActivity.PATH,"/");
         try {
             startActivityForResult(intent, REQUEST_CODE);
         } catch (ActivityNotFoundException e) {
