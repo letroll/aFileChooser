@@ -15,9 +15,35 @@ Intents provide the ability to hook into third-party app components for content 
 
 ![screenshot-1](https://raw.github.com/iPaulPro/aFileChooser/master/screenshot-1.png) ![screenshot-2](https://raw.github.com/iPaulPro/aFileChooser/master/screenshot-2.png)
 
-## Setup
+## Install
+
+__eclipse:__
 
 Add aFileChooser to your project as an [Android Library Project](http://developer.android.com/guide/developing/projects/projects-eclipse.html#ReferencingLibraryProject).
+
+__Android Studio:__
+
+In your settings.gradle add the aFileChooser root directory and the library:
+
+    include ':aFileChooser', ':aFileChooser:aFileChooser'
+
+In your project build.gradle file add the following dependency:
+
+    dependencies {
+        compile project(':aFileChooser:aFileChooser')
+    }
+
+If you have problems with the support-v4 (multiple dex files) then exclude the support-v4 in the dependency section:
+
+    dependencies {
+        compile 'com.android.support:support-v4:19.0.0'
+        compile(project(':aFileChooser:aFileChooser')) {
+            exclude module: 'support-v4'
+        }
+    }
+
+## Setup
+
 
 Add `FileChooserActivity` to your project's AndroidManifest.xml file with a fully-qualified `name`. The `label` and `icon` set here will be shown in the "Intent Chooser" dialog.
 
