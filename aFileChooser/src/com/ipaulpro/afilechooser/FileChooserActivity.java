@@ -101,6 +101,7 @@ public class FileChooserActivity extends FragmentActivity implements
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public void onBackStackChanged() {
 
         int count = mFragmentManager.getBackStackEntryCount();
@@ -117,6 +118,7 @@ public class FileChooserActivity extends FragmentActivity implements
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public boolean onCreateOptionsMenu(Menu menu) {
         if (HAS_ACTIONBAR) {
             boolean hasBackStack = mFragmentManager.getBackStackEntryCount() > 0;

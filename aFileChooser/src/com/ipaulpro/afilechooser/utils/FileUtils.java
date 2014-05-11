@@ -254,6 +254,7 @@ public class FileUtils {
      * @see #getFile(Context, Uri)
      * @author paulburke
      */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public static String getPath(final Context context, final Uri uri) {
 
         if (DEBUG)
